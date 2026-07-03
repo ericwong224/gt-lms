@@ -1,32 +1,39 @@
-# React + TypeScript + Vite
+# GT LMS — 教學協作平台
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Padlet 協作牆 · Kahoot 測驗 · 班級管理，部署於 DigitalOcean App Platform。
 
-Currently, two official plugins are available:
+## 功能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- 登入 / 角色（superadmin、teacher、student）
+- 班級建立與加入（6 位代碼）
+- **協作牆**（Padlet 風格）— 即時貼文
+- **測驗**（Kahoot 風格）— PIN 加入、排行榜
 
-## React Compiler
+## 技術棧
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- 前端：Vite + React + Shadcn UI + Tailwind
+- 後端：Express + PostgreSQL（`gt_lms` on `gt-postgresql`）
+- 部署：`lms.gtschool.hk` via DO gtcollege
 
-## Expanding the Oxlint configuration
+## 本地開發
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+```bash
+npm install
+cd server && npm install && cd ..
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+# 複製 server/.env.example 並填入 DATABASE_URL
+npm run dev          # 前端 :5173
+cd server && npm run dev   # API :8081
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## 部署（DigitalOcean）
+
+1. 建立 GitHub repo `ericwong224/gt-lms` 並 push
+2. DO App Platform 從 `.do/app.yaml` 部署（或 MCP `apps-create-app-from-spec`）
+3. 設定 Secrets：`JWT_SECRET`、`SUPERADMIN_PASSWORD`
+4. DNS：`lms.gtschool.hk` → DO App
+
+## 預設 Superadmin
+
+- Email: `info@wwferic.space`
+- 密碼：DO Secret `SUPERADMIN_PASSWORD`
