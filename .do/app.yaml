@@ -1,0 +1,84 @@
+name: gt-lms
+region: sgp
+
+services:
+  - name: api
+    github:
+      repo: ericwong224/gt-lms
+      branch: main
+      deploy_on_push: true
+    build_command: test -f db/schema.sql && mkdir -p server/db && cp db/schema.sql server/db/ && cd server && npm install --omit=dev || (echo 'FAIL: db/schema.sql missing' && exit 1)
+    run_command: cd server && node index.js
+    source_dir: /
+    environment_slug: node-js
+    instance_size_slug: basic-xxs
+    instance_count: 1
+    http_port: 8081
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        value: ${gt-postgresql.DATABASE_URL}
+      - key: NODE_ENV
+        scope: RUN_TIME
+        value: production
+      - key: PGOPTIONS
+        scope: RUN_TIME
+        value: -c search_path=public
+      - key: JWT_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: SUPERADMIN_EMAIL
+        scope: RUN_TIME
+        value: info@wwferic.space
+      - key: SUPERADMIN_PASSWORD
+        scope: RUN_TIME
+        type: SECRET
+      - key: SUPERADMIN_NAME
+        scope: RUN_TIME
+        value: Super Admin
+      - key: CORS_ORIGIN
+        scope: RUN_TIME
+        value: https://lms.gtschool.hk
+
+static_sites:
+  - name: web
+    github:
+      repo: ericwong224/gt-lms
+      branch: main
+      deploy_on_push: true
+    source_dir: /
+    build_command: npm ci --prefer-offline --no-audit && npm run build
+    output_dir: dist
+    catchall_document: index.html
+    envs:
+      - key: VITE_API_BASE_URL
+        scope: BUILD_TIME
+        value: ${APP_URL}/api
+
+databases:
+  - name: gt-postgresql
+    engine: PG
+    production: true
+    cluster_name: gt-postgresql
+    db_name: gt_lms
+    db_user: doadmin
+
+domains:
+  - domain: lms.gtschool.hk
+    type: PRIMARY
+
+ingress:
+  rules:
+    - match:
+        path:
+          prefix: /api
+      component:
+        name: api
+    - match:
+        path:
+          prefix: /
+      component:
+        name: web
+
+features:
+  - buildpack-stack=ubuntu-22
