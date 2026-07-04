@@ -7,9 +7,9 @@ services:
       repo: ericwong224/gt-lms
       branch: main
       deploy_on_push: true
-    build_command: test -f db/schema.sql && mkdir -p server/db && cp db/schema.sql server/db/ && cd server && npm install --omit=dev || (echo 'FAIL: db/schema.sql missing' && exit 1)
-    run_command: cd server && node index.js
-    source_dir: /
+    source_dir: server
+    build_command: npm install --omit=dev
+    run_command: node index.js
     environment_slug: node-js
     instance_size_slug: basic-xxs
     instance_count: 1
