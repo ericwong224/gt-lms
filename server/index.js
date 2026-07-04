@@ -30,7 +30,9 @@ const SUPERADMIN_NAME = String(process.env.SUPERADMIN_NAME ?? 'Super Admin').tri
 
 const app = express();
 app.use(cors({
-  origin: CORS_ORIGIN ? [CORS_ORIGIN, /^http:\/\/localhost(:\d+)?$/] : true,
+  origin: CORS_ORIGIN
+    ? [CORS_ORIGIN, /^http:\/\/localhost(:\d+)?$/, /^https:\/\/[\w-]+\.ondigitalocean\.app$/]
+    : true,
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json({ limit: '2mb' }));

@@ -50,10 +50,6 @@ static_sites:
     build_command: npm install && npm run build
     output_dir: dist
     catchall_document: index.html
-    envs:
-      - key: VITE_API_BASE_URL
-        scope: BUILD_TIME
-        value: ${APP_URL}/api
 
 databases:
   - name: gt-postgresql
