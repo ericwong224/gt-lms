@@ -91,29 +91,35 @@ async function seedSuperadmin() {
 
 async function bootstrapDb() {
   if (!process.env.DATABASE_URL) return;
-  try {
-    await ensureDatabase();
-    await ensureSchema();
-    await seedSuperadmin();
-    apiDb.ready = true;
-    apiDb.bootError = '';
-  } catch (err) {
-    apiDb.bootError = String(err?.message || err);
-    console.error('DB bootstrap failed:', apiDb.bootError);
+  const delays = [0, 5000, 15000, 30000];
+  for (let i = 0; i < delays.length; i++) {
+    if (delays[i] > 0) await new Promise((r) => setTimeout(r, delays[i]));
+    try {
+      await ensureDatabase();
+      await ensureSchema();
+      await seedSuperadmin();
+      apiDb.ready = true;
+      apiDb.bootError = '';
+      console.log('DB bootstrap complete');
+      return;
+    } catch (err) {
+      apiDb.bootError = String(err?.message || err);
+      console.error(`DB bootstrap attempt ${i + 1} failed:`, apiDb.bootError);
+    }
   }
 }
 
 const api = express.Router();
+
+api.get('/health', (req, res) => {
+  json(res, { ok: true, dbReady: apiDb.ready, bootError: apiDb.bootError || undefined });
+});
 
 api.use((req, res, next) => {
   if (!apiDb.ready && process.env.DATABASE_URL) {
     return res.status(503).json({ error: 'Database initializing', retryAfter: 5 });
   }
   next();
-});
-
-api.get('/health', (req, res) => {
-  json(res, { ok: true, dbReady: apiDb.ready, bootError: apiDb.bootError || undefined });
 });
 
 // ── Auth ──
